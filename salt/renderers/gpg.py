@@ -270,7 +270,7 @@ def _decrypt_ciphertext(cipher, translate_newlines=False):
         )
         return cipher
     else:
-        return str(decrypted_data)
+        return decrypted_data
 
 
 def _decrypt_object(obj, translate_newlines=False):

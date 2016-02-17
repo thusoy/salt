@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Import Python Libs
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 # Import Salt Testing libs
 from salttesting import skipIf, TestCase
@@ -57,6 +57,28 @@ class GPGTestCase(TestCase):
         '''
         key_dir = '/etc/salt/gpgkeys'
         secret = 'Use more salt.'
+        crypted = '!@#$%^&*()_+'
+
+        class GPGDecrypt(object):
+            def communicate(self, *args, **kwargs):
+                return [secret, None]
+
+        class GPGNotDecrypt(object):
+            def communicate(self, *args, **kwargs):
+                return [None, 'decrypt error']
+
+        with patch('salt.renderers.gpg._get_key_dir', MagicMock(return_value=key_dir)):
+            with patch('salt.renderers.gpg.Popen', MagicMock(return_value=GPGDecrypt())):
+                self.assertEqual(gpg._decrypt_ciphertext(crypted), secret)
+            with patch('salt.renderers.gpg.Popen', MagicMock(return_value=GPGNotDecrypt())):
+                self.assertEqual(gpg._decrypt_ciphertext(crypted), crypted)
+
+    def test__decrypt_ciphertext_with_unicode_plaintext(self):
+        '''
+        test _decrypt_ciphertext
+        '''
+        key_dir = '/etc/salt/gpgkeys'
+        secret = 'ümlauts und rømmegrøt ٩(●̮̮̃•̃)۶'
         crypted = '!@#$%^&*()_+'
 
         class GPGDecrypt(object):
